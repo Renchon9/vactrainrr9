@@ -1,0 +1,131 @@
+##grflangid 0x01
+
+lang: 7F
+
+STR_GRF_NAME :Vactrain Set 1.1.FORK
+STR_GRF_DESCRIPTION :Fork of Vactrain Set by Emperor Jake to add new features. Put maglev trains in vacuum tubes to allow ludicrous speeds, but at an exorbitant price. An essential for far-future gameplay. Graphics by Emperor Jake, Voyager One, DJNekkid, Purno, Froix, Erato and Zephyris; code by Emperor Jake and others. Forked by WORD559. (c) 2018, released under GPLv2 and above. 
+
+
+
+
+
+
+#trains
+
+STR_NAME_CHINESE_PROTO					:Fenglong FL1 Prototype
+STR_NAME_CHINESE_INTERCITY				:Fenglong FL2
+STR_NAME_CHINESE_INTERNATIONAL			:Fenglong FL5 “Gepard”
+STR_NAME_CHINESE_INTERCONTINENTAL		:Fenglong FL8
+
+STR_NAME_HYPERLOOP_1				:Hyperloop Pod
+
+STR_NAME_SWISSMETRO_1				:Swissmetro
+
+STR_NAME_CHIMAERA					:Siemens Chimaera
+
+STR_NAME_FRENCH_1					:Alstom Train-Sous-Vide 
+STR_NAME_FRENCH_2					:Alstom TSV Duplex
+
+STR_NAME_JAPANESE_1					:JVAC Shinkūsen 1000
+STR_NAME_JAPANESE_2					:JVAC Shinkūsen 4000
+
+
+#cargo vactrains
+
+STR_NAME_CARGO_1					:Siemens TransCargo
+STR_NAME_CARGO_2					:Alstom TSV Fret
+STR_NAME_CARGO_3					:F-Trainz FT001
+STR_NAME_CARGO_4					:Juanlong “Silk Dragon”
+
+
+# additional text - metric TODO ADD DIFFERENT UNITS mph and kW
+
+STR_TEXT_CHINESE_PROTO					:{BLACK}Loading Speed: {GOLD}Slow {}{BLACK}Atmospheric Speed: {GOLD}200 km/h {}{BLACK}May only attach to itself
+STR_TEXT_CHINESE_INTERCITY				:{BLACK}Loading Speed: {GOLD}Fast {}{BLACK}Atmospheric Speed: {GOLD}200 km/h {}{BLACK}Wagon Power: {GOLD}7,000 hp {}{BLACK}Wagon Capacity: {GOLD}80 Passengers
+STR_TEXT_CHINESE_INTERNATIONAL			:{BLACK}Loading Speed: {GOLD}Fast {}{BLACK}Atmospheric Speed: {GOLD}200 km/h {}{BLACK}Wagon Power: {GOLD}7,000 hp {}{BLACK}Wagon Capacity: {GOLD}72 Passengers
+STR_TEXT_CHINESE_INTERCONT				:{BLACK}Loading Speed: {GOLD}Medium {}{BLACK}Atmospheric Speed: {GOLD}200 km/h {}{BLACK}Wagon Power: {GOLD}19,000 hp {}{BLACK}Wagon Capacity: {GOLD}105/110 Passengers
+
+STR_TEXT_HYPERLOOP_1				:{BLACK}Loading Speed: {GOLD}Medium {}{BLACK}Atmospheric Speed: {GOLD}120 km/h {}{BLACK}May not attach to anything
+
+STR_TEXT_SWISSMETRO_1				:{BLACK}Loading Speed: {GOLD}Medium {}{BLACK}Atmospheric Speed: {GOLD}420 km/h {}{BLACK}Wagon Power: {GOLD}10,000 hp {}{BLACK}Wagon Capacity: {GOLD}56 Passengers
+
+STR_TEXT_CHIMAERA					:{BLACK}Loading Speed: {GOLD}Slow {}{BLACK}Atmospheric Speed: {GOLD}640 km/h {}{BLACK}Wagon Power: {GOLD}12,000 hp {}{BLACK}Wagon Capacity: {GOLD}40 Passengers
+
+STR_TEXT_FRENCH_1					:{BLACK}Loading Speed: {GOLD}Fast {}{BLACK}Atmospheric Speed: {GOLD}450 km/h {}{BLACK}Wagon Power: {GOLD}9,000 hp {}{BLACK}Wagon Capacity: {GOLD}10/62 Passengers
+STR_TEXT_FRENCH_2					:{BLACK}Loading Speed: {GOLD}Fast {}{BLACK}Atmospheric Speed: {GOLD}640 km/h {}{BLACK}Wagon Power: {GOLD}16,000 hp {}{BLACK}Wagon Capacity: {GOLD}120 Passengers
+
+STR_TEXT_JAPANESE_1					:{BLACK}Loading Speed: {GOLD}Medium {}{BLACK}Atmospheric Speed: {GOLD}500 km/h {}{BLACK}Wagon Power: {GOLD}7,000 hp {}{BLACK}Wagon Capacity: {GOLD}95 Passengers
+STR_TEXT_JAPANESE_2					:{BLACK}Loading Speed: {GOLD}Slow {}{BLACK}Atmospheric Speed: {GOLD}500 km/h {}{BLACK}Wagon Power: {GOLD}20,000 hp {}{BLACK}Wagon Capacity: {GOLD}185/190 Passengers
+
+STR_TEXT_CARGO_1					:{BLACK}Atmospheric Speed: {GOLD}300 km/h
+STR_TEXT_CARGO_2					:{BLACK}Atmospheric Speed: {GOLD}450 km/h
+STR_TEXT_CARGO_3					:{BLACK}Atmospheric Speed: {GOLD}640 km/h
+STR_TEXT_CARGO_4					:{BLACK}Atmospheric Speed: {GOLD}750 km/h
+
+
+
+#wagons
+
+STR_NAME_POWERED_WAGON				:Vactrain Unit Wagon (Powered)
+STR_NAME_UNPOWERED_WAGON			:Vactrain Unit Wagon (Unpowered)
+STR_NAME_CARGO_WAGON				:Vactrain Universal Cargo Module
+STR_NAME_EXPRESS_WAGON				:Vactrain Express Cargo Van
+
+# general
+
+STR_NEW_ENGINE :Vactrain vehicle
+STR_AUTOREPLACE :Vactrain Vehicles
+STR_BUILD_CAPTION :New Vactrain Vehicles
+STR_TOOLBAR_CAPTION :Vacuum Tube Construction
+STR_VAC_RAIL :Vacuum Tube construction
+STR_VAC_NAME :Vacuum Tube Tracks
+
+# errors
+
+STR_ERROR_SELF_ONLY					:May only attach to itself
+STR_ERROR_SINGLE_ONLY				:May not attach to anything
+STR_ERROR_MUWAG_ONLY				:Unit Wagons Only
+STR_ERROR_CARGO_ONLY				:Cargo Wagons Only
+STR_ERROR_NO_WAGONS					:Wagons may not be attached
+
+#general params
+
+STR_PARAM_CARGO_ENGINES				:Enable Cargo Vactrains
+STR_PARAM_CARGO_ENGINES_DESC		:Enable or disable dedicated cargo vactrains which can carry non-express cargoes
+
+STR_PARAM_CAPACITY					:Change Vactrain Capacity
+STR_PARAM_CAPACITY_DESC				:Allows to change capacities of the vacuum tube trains (e.g, to balance it against others)
+STR_PARAM_CAPACITY_LOW				:Conservative
+STR_PARAM_CAPACITY_MED				:Normal
+STR_PARAM_CAPACITY_HIGH				:Generous
+
+STR_PARAM_STARTING_YEAR             :Starting Year
+STR_PARAM_STARTING_YEAR_DESC        :Adjust year that first new vehicle becomes available in.
+
+#cost params
+
+STR_PARAM_RUNNING_COST                                          :Adjust running costs
+STR_PARAM_RUNNING_COST_DESC                                     :Allows to adjust the running costs of the vacuum tube trains (e.g, to balance it against others)
+STR_PARAM_PURCHASE_COST                                         :Adjust purchase costs
+STR_PARAM_PURCHASE_COST_DESC                                    :Allows to adjust the purchase costs of the vacuum tube trains (e.g, to balance it against others)
+STR_PARAM_RAIL_COST                                             :Adjust vacuum tube build / clear costs
+STR_PARAM_RAIL_COST_DESC                                        :Allows to adjust the build and clear cost costs of the vacuum tube.
+STR_PARAM_COST_AUTOMATICALLY                                    :automatic (default)
+STR_PARAM_COST_BY256                                            :1 / 256
+STR_PARAM_COST_BY128                                            :1 / 128
+STR_PARAM_COST_BY64                                             :1 / 64
+STR_PARAM_COST_BY32                                             :1 / 32
+STR_PARAM_COST_BY16                                             :1 / 16
+STR_PARAM_COST_BY8                                              :1 / 8
+STR_PARAM_COST_BY4                                              :1 / 4
+STR_PARAM_COST_BY2                                              :1 / 2
+STR_PARAM_COST_NORMAL                                           :normal
+STR_PARAM_COST_TIMES2                                           :2x
+STR_PARAM_COST_TIMES4                                           :4x
+STR_PARAM_COST_TIMES8                                           :8x
+STR_PARAM_COST_TIMES16                                          :16x
+STR_PARAM_COST_TIMES32                                          :32x
+STR_PARAM_COST_TIMES64                                          :64x
+STR_PARAM_COST_TIMES128                                         :128x
+STR_PARAM_COST_TIMES256                                         :256x
+STR_PARAM_COST_TIMES512                                         :512x

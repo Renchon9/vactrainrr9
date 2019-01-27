@@ -1,0 +1,2292 @@
+/*
+This is a NewGRF which adds a Vacuum Tube Railtype, and some trains to go with it, to OpenTTD. 
+
+Code by Emperor Jake, using parts from code by Terkhen, planetmaker, Transportman, FooBar and possibly others
+
+Forked by WORD559
+
+(c) 2018 Emperor Jake. Licensed under GPLv2+
+*/
+
+grf {
+ grfid: "\44\4A\59\03"; //tod omaybe change
+ name: string(STR_GRF_NAME);
+ desc: string(STR_GRF_DESCRIPTION);
+ version: 50;
+ min_compatible_version: 40;
+
+//rail params here
+ 
+ 
+ param {
+  param_starting_year {
+   type: int;
+   name: string(STR_PARAM_STARTING_YEAR);
+   desc: string(STR_PARAM_STARTING_YEAR_DESC);
+   min_value: 1800;
+   max_value: 3000;
+   def_value: 2020;
+   }
+  }
+ 
+ //cost parameters
+ //courtesy of Terkhen
+ param {
+  param_running_cost_mult {
+   type: int;
+   name: string(STR_PARAM_RUNNING_COST);
+   desc: string(STR_PARAM_RUNNING_COST_DESC);
+   min_value: 0;
+   max_value: 18;
+   def_value: 0;
+   names: {
+    0: string(STR_PARAM_COST_AUTOMATICALLY);
+    1: string(STR_PARAM_COST_BY256);
+    2: string(STR_PARAM_COST_BY128);
+    3: string(STR_PARAM_COST_BY64);
+    4: string(STR_PARAM_COST_BY32);
+    5: string(STR_PARAM_COST_BY16);
+    6: string(STR_PARAM_COST_BY8);
+    7: string(STR_PARAM_COST_BY4);
+    8: string(STR_PARAM_COST_BY2);
+    9: string(STR_PARAM_COST_NORMAL);
+    10: string(STR_PARAM_COST_TIMES2);
+    11: string(STR_PARAM_COST_TIMES4);
+    12: string(STR_PARAM_COST_TIMES8);
+    13: string(STR_PARAM_COST_TIMES16);
+    14: string(STR_PARAM_COST_TIMES32);
+    15: string(STR_PARAM_COST_TIMES64);
+    16: string(STR_PARAM_COST_TIMES128);
+    17: string(STR_PARAM_COST_TIMES256);
+    18: string(STR_PARAM_COST_TIMES512);
+   };
+  }
+ }
+
+ param {
+  param_purchase_cost_mult {
+   type: int;
+   name: string(STR_PARAM_PURCHASE_COST);
+   desc: string(STR_PARAM_PURCHASE_COST_DESC);
+   min_value: 0;
+   max_value: 18;
+   def_value: 0;
+   names: {
+    0: string(STR_PARAM_COST_AUTOMATICALLY);
+    1: string(STR_PARAM_COST_BY256);
+    2: string(STR_PARAM_COST_BY128);
+    3: string(STR_PARAM_COST_BY64);
+    4: string(STR_PARAM_COST_BY32);
+    5: string(STR_PARAM_COST_BY16);
+    6: string(STR_PARAM_COST_BY8);
+    7: string(STR_PARAM_COST_BY4);
+    8: string(STR_PARAM_COST_BY2);
+    9: string(STR_PARAM_COST_NORMAL);
+    10: string(STR_PARAM_COST_TIMES2);
+    11: string(STR_PARAM_COST_TIMES4);
+    12: string(STR_PARAM_COST_TIMES8);
+    13: string(STR_PARAM_COST_TIMES16);
+    14: string(STR_PARAM_COST_TIMES32);
+    15: string(STR_PARAM_COST_TIMES64);
+    16: string(STR_PARAM_COST_TIMES128);
+    17: string(STR_PARAM_COST_TIMES256);
+    18: string(STR_PARAM_COST_TIMES512);
+   };
+  }
+ }
+
+ param {
+  param_build_rail_cost_mult {
+   type: int;
+   name: string(STR_PARAM_RAIL_COST);
+   desc: string(STR_PARAM_RAIL_COST_DESC);
+   min_value: 0;
+   max_value: 18;
+   def_value: 0;
+   names: {
+    0: string(STR_PARAM_COST_AUTOMATICALLY);
+    1: string(STR_PARAM_COST_BY256);
+    2: string(STR_PARAM_COST_BY128);
+    3: string(STR_PARAM_COST_BY64);
+    4: string(STR_PARAM_COST_BY32);
+    5: string(STR_PARAM_COST_BY16);
+    6: string(STR_PARAM_COST_BY8);
+    7: string(STR_PARAM_COST_BY4);
+    8: string(STR_PARAM_COST_BY2);
+    9: string(STR_PARAM_COST_NORMAL);
+    10: string(STR_PARAM_COST_TIMES2);
+    11: string(STR_PARAM_COST_TIMES4);
+    12: string(STR_PARAM_COST_TIMES8);
+    13: string(STR_PARAM_COST_TIMES16);
+    14: string(STR_PARAM_COST_TIMES32);
+    15: string(STR_PARAM_COST_TIMES64);
+    16: string(STR_PARAM_COST_TIMES128);
+    17: string(STR_PARAM_COST_TIMES256);
+    18: string(STR_PARAM_COST_TIMES512);
+   };
+  }
+ }
+}
+
+/*
+ * ********************************************
+ * Parameter 1: Running Costs
+ * 0: Automatic (default)
+ * 1: 1/256
+ * 2: 1/128
+ * ...
+ * 9: 1
+ * ...
+ * 18: 256x
+ * in NML a value of 0 means: don't change the base costs
+ * ********************************************
+ */
+
+RUNNING_COST_MOD = (param_running_cost_mult == 0) ? 0 : param_running_cost_mult - 9;
+
+/*
+ * ********************************************
+ * Parameter 2: Purchase Costs
+ * 0: Automatic (default)
+ * 1: 1/256
+ * 2: 1/128
+ * ...
+ * 9: 1
+ * ...
+ * 18: 256x
+ * in NML a value of 0 means: don't change the base costs
+ * ********************************************
+ */
+
+PURCHASE_COST_MOD = (param_purchase_cost_mult == 0) ? 0 : param_purchase_cost_mult - 9;
+
+/*
+ * ********************************************
+ * Parameter 3: Build/Clear rail Costs
+ * 0: Automatic (default)
+ * 1: 1/256
+ * 2: 1/128
+ * ...
+ * 9: 1
+ * ...
+ * 18: 256x
+ * in NML a value of 0 means: don't change the base costs
+ * ********************************************
+ */
+
+RAIL_COST_MOD = (param_build_rail_cost_mult == 0) ? 0 : param_build_rail_cost_mult - 9;
+
+/*
+ * ********************************************
+ * Check NewGRFs and adjust base costs
+ * ********************************************
+ */
+
+// NARS2
+if (grf_future_status("\44\44\03\02") == 1) {
+    if (param_running_cost_mult == 0) { RUNNING_COST_MOD = 2; }
+    if (param_purchase_cost_mult == 0) { PURCHASE_COST_MOD = 0; }
+}
+
+// UKRS2
+if (grf_future_status("\44\44\01\11") == 1) {
+    if (param_running_cost_mult == 0) { RUNNING_COST_MOD = 2; }
+    if (param_purchase_cost_mult == 0) { PURCHASE_COST_MOD = 0; }
+}
+
+//Tropical refurbishment set
+if (grf_future_status("\44\44\40\40") == 1) {
+    if (param_running_cost_mult == 0) { RUNNING_COST_MOD = 2; }
+    if (param_purchase_cost_mult == 0) { PURCHASE_COST_MOD = 0; }
+}
+
+//2ccTrainset 
+if (grf_future_status("\54\4D\01\01") == 1) {
+    if (param_running_cost_mult == 0) { RUNNING_COST_MOD = 3 + param["\54\4D\01\01", 1] - 2; }
+    if (param_purchase_cost_mult == 0) { PURCHASE_COST_MOD = 2 + param["\54\4D\01\01", 0] - 2; }
+}
+
+//Japanese Trainset
+if (grf_future_status("\53\5A\0D\00") == 1) {
+    if (param_running_cost_mult == 0) { RUNNING_COST_MOD = 1; }
+    if (param_purchase_cost_mult == 0) { PURCHASE_COST_MOD = 0; }
+}
+
+// Swedish Trainset
+if (grf_future_status("\41\49\00\06") == 1) {
+    if (param_running_cost_mult == 0) { RUNNING_COST_MOD = 0; }
+    if (param_purchase_cost_mult == 0) { PURCHASE_COST_MOD = 1; }
+}
+
+//Dutch Trainset - dunno if this works
+if (grf_future_status("\FB\FB\06\01") == 1) {
+    if (param_running_cost_mult == 0) { RUNNING_COST_MOD = 3 + param["\FB\FB\06\01", 3] - 2; }
+    if (param_purchase_cost_mult == 0) { PURCHASE_COST_MOD = 2 + param["\FB\FB\06\01", 2] - 2; }
+}
+
+
+param[30] = RUNNING_COST_MOD;
+param[31] = PURCHASE_COST_MOD;
+param[32] = RAIL_COST_MOD;
+
+basecost {
+ PR_RUNNING_TRAIN_STEAM: param[30] + 4;
+ PR_BUILD_VEHICLE_TRAIN: param[31] + 3;
+ PR_BUILD_VEHICLE_WAGON: param[31] + 8;
+ PR_BUILD_RAIL: param[32];
+ PR_CLEAR_RAIL: param[32];
+}
+
+//table things
+
+railtypetable {
+ MGLV, VACT
+}
+
+cargotable {
+ PASS, MAIL, GOOD, VALU, GOLD, DIAM, TOUR, COAL
+}
+
+//train look nice thing
+traininfo_y_offset = 2;
+train_width_32_px = 1;
+
+
+//NEW RAIL TEMPLATES
+//from Dutch Track Set
+
+//Overlay
+template template_overlay() {
+    //left_x, upper_y, width, height, offset_x, offset_y
+    [   1,    1,       63,    31,     -31,         0]
+    [  66,    1,       63,    31,     -31,         0]
+    [ 131,    1,       63,    31,     -31,         0]
+    [ 196,    1,       63,    31,     -31,         0]
+    [ 261,    1,       63,    31,     -31,         0]
+    [ 326,    1,       63,    31,     -31,         0]
+	//Slopes
+    [ 391,    1,       63,    38,     -31,        -8]
+    [ 456,    1,       63,    22,     -31,         0]
+	[ 521,    1,       63,    22,     -31,         0]
+    [ 586,    1,       63,    38,     -31,        -8]
+}
+
+//Underlay	
+template template_underlay() {
+    //left_x, upper_y, width, height, offset_x, offset_y
+    [   1,    1,       63,    31,     -31,         0]
+    [  66,    1,       63,    31,     -31,         0]
+    [ 131,    1,       63,    31,     -32,         0]
+    [ 196,    1,       63,    31,     -31,         0]
+    [ 261,    1,       63,    31,     -31,         0]
+    [ 326,    1,       63,    31,     -31,         0]
+	//Slopes
+    [ 391,    1,       63,    38,     -31,        -8]
+    [ 456,    1,       63,    22,     -31,         0]
+	[ 521,    1,       63,    22,     -31,         0]
+    [ 586,    1,       63,    38,     -31,        -8]
+	//Crossings
+	[   1,   49,       63,    31,     -31,         0]
+	[  66,   49,       63,    31,     -31,         0]
+    [ 131,   49,       63,    31,     -31,         0]
+    [ 196,   49,       63,    31,     -31,         0]
+    [ 261,   49,       63,    31,     -31,         0]
+    [ 326,   49,       63,    31,     -31,         0]
+}
+
+//Tunnel
+template template_tunnel() {
+	//left_x, upper_y, width, height, offset_x, offset_y
+    [   3,    1,       63,    30,       -32,        0]
+    [  68,    1,       63,    30,       -31,        0]
+    [   3,   64,       63,    30,       -31,        0]
+    [  68,   64,       63,    30,       -30,        0]
+}
+
+//Bridge surface
+template template_bridge() {
+	//left_x, upper_y, width, height, offset_x, offset_y
+	[   1,    1,       64,    31,       -31,        0]
+	[  66,    1,       64,    31,       -31,        0]
+	//Slopes
+	[ 131,    1,       64,    39,       -31,       -8]
+	[ 196,    1,       64,    23,       -31,        0]
+	[ 261,    1,       64,    23,       -31,        0]
+	[ 326,    1,       64,    39,       -32,       -8]
+}
+
+//Level Crossing
+template template_crossing() {
+	//left_x, upper_y, width, height, offset_x, offset_y
+	[   1,    1,       64,    31,     -31,           0]
+	[  66,    1,       64,    31,     -31,           0]
+	[ 140,    1,       5,    16,        0,         -11]
+	[ 217,    1,       5,    16,       -5,          -9]
+	[ 140,    1,       5,    16,       -8,         -14]
+	[ 217,    1,       5,    16,       -8,         -10]
+	[ 140,    1,       5,    16,        6,         -14]
+	[ 217,    1,       5,    16,        5,         -14]
+	[ 140,    1,       5,    16,       -5,         -17]
+	[ 217,    1,       5,    16,        0,         -14]
+}
+
+
+// depot sprites without tracks
+template template_depot() {
+	//left_x, upper_y, width, height, offset_x, offset_y
+	[131,  1, 20,16,  11,   2]
+	[ 66,  1, 64,56,  -9, -41]
+	[131, 18, 20,16, -24,   2]
+	[  1,  1, 64,56, -53, -41]
+	[  1, 64, 64,56, -53, -41]
+	[ 66, 64, 64,56,  -9, -41]
+}
+
+//Vactrain "Poles"
+template template_pylons() {
+	[      1,       1,     14,     22,       -11, 	 -22]
+	[     17,       1,     14,     24,        -1, 	 -23]
+	[     33,       1,     14,     22,        -2, 	 -22]
+	[     49,       1,     14,     24,       -13, 	 -21]
+	[     65,       1,     4,      22,        0,  	 -21]
+	[     81,       1,     4,      28,        0,  	 -23]
+	[     97,       1,     14,     22, 	     -3,  	 -23]
+	[    113,       1,     14,     22,       -9, 	 -23]
+}
+
+
+//Vactrain Tubes
+template template_wires() {
+	[1, 	1,  64, 39, -47, -8]
+	[66, 	1,  64, 39, -15, -8]
+	[131, 	1,  64, 39, -15, -8]
+	[196, 	1,  64, 39, -47, -8]
+	[261, 	1,  64, 48, -46, -4]
+	[326, 	1,  64, 39, -17,  1]
+	[391, 	1,  64, 39, -47, -2]
+	[456, 	1,  64, 48, -18, -4]
+	[1, 	52, 64, 39, -47, -8]
+	[66, 	52, 64, 39, -15, -8]
+	[131, 	52, 64, 39, -15, -8]
+	[196, 	52, 64, 39, -47, -8]
+	[261, 	52, 64, 48, -46, -4]
+	[326, 	52, 64, 39, -17,  1]
+	[391, 	52, 64, 39, -47, -2]
+	[456, 	52, 64, 48, -18, -4]
+	[1,    104, 64, 39, -47, -8]
+	[66,   104, 64, 39, -15, -8]
+	[131,  104, 64, 39, -15, -8]
+	[196,  104, 64, 39, -47, -8]
+	[261,  104, 64, 48, -46, -4]
+	[326,  104, 64, 39, -17,  1]
+	[391,  104, 64, 39, -47, -2]
+	[456,  104, 64, 48, -18, -4]
+	[1,    156, 64, 39, -47, -8]
+	[66,   156, 64, 39, -17, -8]
+	[131,  156, 64, 39, -47, -8]
+	[196,  156, 64, 39, -15, -8]
+}
+
+// GUI icons
+template template_gui() {
+	[  0,  0, 20, 20, 0, 0]
+	[ 25,  0, 20, 20, 0, 0]
+	[ 50,  0, 20, 20, 0, 0]
+	[ 75,  0, 20, 20, 0, 0]
+	[100,  0, 20, 20, 0, 0]
+	[125,  0, 20, 20, 0, 0]
+	[150,  0, 20, 20, 0, 0]
+	[175,  0, 20, 20, 0, 0]
+	[200,  0, 32, 32, 0, 0]
+	[250,  0, 32, 32, 0, 0]
+	[300,  0, 32, 32, 0, 0]
+	[350,  0, 32, 32, 0, 0]
+	[400,  0, 32, 32, 0, 0]
+	[450,  0, 32, 32, 0, 0]
+	[500,  0, 32, 32, 0, 0]
+	[550,  0, 32, 32, 0, 0]
+}
+
+
+//spritesets for rails
+
+//Overlay Maglev
+spriteset(spriteset_fsmaglev_overlay,"src/tracks/overlay_mag.png") {
+	template_overlay()
+}
+
+//Underlay Maglev
+spriteset(spriteset_fsmaglev_underlay,"src/tracks/underlay_mag.png") {
+	template_underlay()
+}
+
+//Tunnel Maglev
+spriteset(spriteset_fsmaglev_tunnel,"src/tracks/tunnel_mag.png") {
+	template_tunnel()
+}
+
+//Bridge Maglev
+spriteset(spriteset_fsmaglev_bridge,"src/tracks/bridge_mag.png") {
+	template_bridge()
+}
+
+//Level Crossing Maglev
+spriteset(spriteset_fsmaglev_crossing_open,"src/tracks/levelcrossing.png") {
+	template_crossing()
+}
+
+spriteset(spriteset_fsmaglev_crossing_closed,"src/tracks/levelcrossing.png") {
+	template_crossing()
+}
+
+//Overlay Vactrain
+spriteset(spriteset_vactrain_overlay,"src/tracks/overlay_vac.png") {
+	template_overlay()
+}
+
+//Underlay Vactrain
+spriteset(spriteset_vactrain_underlay,"src/tracks/underlay_vac.png") {
+	template_underlay()
+}
+
+//Tunnel Vactrain
+spriteset(spriteset_vactrain_tunnel,"src/tracks/tunnel_vac.png") {
+	template_tunnel()
+}
+
+//Bridge Vactrain
+spriteset(spriteset_vactrain_bridge,"src/tracks/bridge_vac.png") {
+	template_bridge()
+}
+
+//Depot Vactrain
+spriteset(spriteset_vactrain_depot_normal,"src/tracks/depot_normal.png") {
+	template_depot()
+}
+
+spriteset(spriteset_vactrain_depot_snow,"src/tracks/depot_snow.png") {
+	template_depot()
+}
+
+//Vactrain "Catenary"
+
+spriteset(spriteset_vactrain_pylons,"src/tracks/poles-vactrain.png") {
+		template_pylons()
+}
+
+spriteset(spriteset_vactrain_tubes,"src/tracks/vactubes.png") {
+		template_wires()
+}
+
+//GUI for OpenGFX
+
+spriteset(spriteset_gui_opengfx, "src/tracks/gui_opengfx.png") {
+	template_gui()
+}
+
+//GUI for TTD --TODO--
+
+
+
+//VEHICLE TEMPLATES
+
+template template_2cc_std(x, y) {
+    //[left_x, upper_y, width, height, offset_x, offset_y]
+    [x    , y,  8, 24,  -3, -12]
+    [x+9  , y, 22, 20, -14, -12]
+    [x+32 , y, 32, 16, -16, -12]
+    [x+65 , y, 22, 20,  -6, -12]
+    [x+88 , y,  8, 24,  -3, -12]
+    [x+97 , y, 22, 20, -14, -12]
+    [x+120, y, 32, 16, -16, -12]
+    [x+153, y, 22, 20,  -6, -12]
+}
+
+
+//todo: wide template
+template template_2cc_wide(x, y) {
+    //[left_x, upper_y, width, height, offset_x, offset_y]
+    [x    , y,  8, 24,  -3, -12]
+    [x+9  , y, 22, 20, -14, -14]
+    [x+32 , y, 32, 16, -16, -12]
+    [x+65 , y, 22, 20,  -6, -12]
+    [x+88 , y,  8, 24,  -3, -12]
+    [x+97 , y, 22, 20, -14, -12]
+    [x+120, y, 32, 16, -16, -12]
+    [x+153, y, 22, 20,  -6, -14]
+}
+
+
+template template_purchase(x, y) {
+    //[left_x, upper_y, width, height, offset_x, offset_y]
+    [x, y,  87, 12, -25, -8]
+}
+
+//4 rows: y = 128
+//1 rows: y = 32
+
+//Dualheaded Engines
+template template_purchase_dualheaded(x, y) {
+    //[left_x, upper_y, width, height, offset_x, offset_y]
+	[1  ,  1,  1,  1,   0,   0, "src/trains/empty.png"]
+    [1  ,  1,  1,  1,   0,   0, "src/trains/empty.png"]
+    [1 	,  1,  1,  1,   0,   0, "src/trains/empty.png"]
+    [1 	,  1,  1,  1,   0,   0, "src/trains/empty.png"]
+    [1 	,  1,  1,  1,   0,   0, "src/trains/empty.png"]
+    [1 	,  1,  1,  1,   0,   0, "src/trains/empty.png"]
+    [x	,  y,  87, 12, -11, -8]
+    [1	,  1,  1,  1,   0,   0, "src/trains/empty.png"]
+}
+
+
+//VEHICLE SPRITESETS
+
+//Hyperloop 1
+spriteset(spriteset_hyperloop_1, "src/trains/hyperloop_1.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_hyperloop_1_purchase, "src/trains/hyperloop_1.png") {
+	template_purchase(1, 32)
+}
+
+//chinese vactrains -- todo: fix mail heads/reverse lights
+
+//Silk Dragon Prototype
+spriteset(spriteset_chinese_proto, "src/trains/chinese_proto.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_chinese_proto_purchase, "src/trains/chinese_proto.png") {
+	template_purchase(1, 32)
+}
+
+//Chinese Intercity
+spriteset(spriteset_chinese_intercity_pax_head, "src/trains/chinese_intercity.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_chinese_intercity_mail_head, "src/trains/chinese_intercity.png") {
+	template_2cc_std(1, 32)
+}
+
+spriteset(spriteset_chinese_intercity_pax, "src/trains/chinese_intercity.png") {
+	template_2cc_std(1, 64)
+}
+
+spriteset(spriteset_chinese_intercity_mail, "src/trains/chinese_intercity.png") {
+	template_2cc_std(1, 96)
+}
+
+
+spriteset(spriteset_chinese_intercity_purchase, "src/trains/chinese_intercity.png") {
+	template_purchase_dualheaded(1, 128)
+}
+
+//Chinese International
+spriteset(spriteset_chinese_international_pax_head, "src/trains/chinese_international.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_chinese_international_mail_head, "src/trains/chinese_international.png") {
+	template_2cc_std(1, 32)
+}
+
+spriteset(spriteset_chinese_international_pax, "src/trains/chinese_international.png") {
+	template_2cc_std(1, 64)
+}
+
+spriteset(spriteset_chinese_international_mail, "src/trains/chinese_international.png") {
+	template_2cc_std(1, 96)
+}
+
+
+spriteset(spriteset_chinese_international_purchase, "src/trains/chinese_international.png") {
+	template_purchase_dualheaded(1, 128)
+}
+
+
+//Chinese Intercontinental
+
+spriteset(spriteset_chinese_intercont_pax_head, "src/trains/chinese_intercont.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_chinese_intercont_mail_head, "src/trains/chinese_intercont.png") {
+	template_2cc_std(1, 32)
+}
+
+spriteset(spriteset_chinese_intercont_pax, "src/trains/chinese_intercont.png") {
+	template_2cc_std(1, 64)
+}
+
+spriteset(spriteset_chinese_intercont_mail, "src/trains/chinese_intercont.png") {
+	template_2cc_std(1, 96)
+}
+
+//todo make separate mail heads
+
+spriteset(spriteset_chinese_intercont_purchase, "src/trains/chinese_intercont.png") {
+	template_purchase_dualheaded(1, 128)
+}
+
+
+
+//Swissmetro
+spriteset(spriteset_swissmetro_front, "src/trains/swissmetro.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_swissmetro_rear, "src/trains/swissmetro.png") {
+	template_2cc_std(1, 32)
+}
+
+spriteset(spriteset_swissmetro_pax, "src/trains/swissmetro.png") {
+	template_2cc_std(1, 64)
+}
+
+spriteset(spriteset_swissmetro_mail, "src/trains/swissmetro.png") {
+	template_2cc_std(1, 96)
+}
+
+
+spriteset(spriteset_swissmetro_purchase, "src/trains/swissmetro.png") {
+	template_purchase_dualheaded(1, 128)
+}
+
+//Chimaera
+spriteset(spriteset_chimaera_front, "src/trains/chimaera.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_chimaera_rear, "src/trains/chimaera.png") {
+	template_2cc_std(1, 32)
+}
+
+spriteset(spriteset_chimaera_pax, "src/trains/chimaera.png") {
+	template_2cc_std(1, 64)
+}
+
+spriteset(spriteset_chimaera_mail, "src/trains/chimaera.png") {
+	template_2cc_std(1, 96)
+}
+
+
+spriteset(spriteset_chimaera_purchase, "src/trains/chimaera.png") {
+	template_purchase_dualheaded(1, 128)
+}
+
+
+//TSV 1st generation
+
+spriteset(spriteset_tsv_1_front, "src/trains/tsv_1.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_tsv_1_rear, "src/trains/tsv_1.png") {
+	template_2cc_std(1, 32)
+}
+
+spriteset(spriteset_tsv_1_node, "src/trains/tsv_1.png") {
+	template_2cc_std(1, 64)
+}
+
+spriteset(spriteset_tsv_1_pax, "src/trains/tsv_1.png") {
+	template_2cc_std(1, 96)
+}
+
+spriteset(spriteset_tsv_1_mail, "src/trains/tsv_1.png") {
+	template_2cc_std(1, 128)
+}
+
+
+spriteset(spriteset_tsv_1_purchase, "src/trains/tsv_1.png") {
+	template_purchase_dualheaded(1, 160)
+}
+
+//TSV Duplex
+
+spriteset(spriteset_tsv_duplex_pax_head, "src/trains/tsv_2.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_tsv_duplex_mail_head, "src/trains/tsv_2.png") {
+	template_2cc_std(1, 32)
+}
+
+spriteset(spriteset_tsv_duplex_pax, "src/trains/tsv_2.png") {
+	template_2cc_std(1, 64)
+}
+
+spriteset(spriteset_tsv_duplex_mail, "src/trains/tsv_2.png") {
+	template_2cc_std(1, 96)
+}
+
+//todo make separate mail heads
+
+spriteset(spriteset_tsv_duplex_purchase, "src/trains/tsv_2.png") {
+	template_purchase_dualheaded(1, 128)
+}
+
+
+
+//Japanese Vactrain 1
+
+spriteset(spriteset_shinkukan_1_front, "src/trains/shinkukan_1.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_shinkukan_1_rear, "src/trains/shinkukan_1.png") {
+	template_2cc_std(1, 32)
+}
+
+spriteset(spriteset_shinkukan_1_pax, "src/trains/shinkukan_1.png") {
+	template_2cc_std(1, 64)
+}
+
+spriteset(spriteset_shinkukan_1_mail, "src/trains/shinkukan_1.png") {
+	template_2cc_std(1, 96)
+}
+
+//todo make separate mail heads
+
+spriteset(spriteset_shinkukan_1_purchase, "src/trains/shinkukan_1.png") {
+	template_purchase_dualheaded(1, 128)
+}
+
+
+//Japanese DD
+
+spriteset(spriteset_shinkukan_dd_pax_head, "src/trains/shinkukan_dd.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_shinkukan_dd_mail_head, "src/trains/shinkukan_dd.png") {
+	template_2cc_std(1, 32)
+}
+
+spriteset(spriteset_shinkukan_dd_pax, "src/trains/shinkukan_dd.png") {
+	template_2cc_std(1, 64)
+}
+
+spriteset(spriteset_shinkukan_dd_mail, "src/trains/shinkukan_dd.png") {
+	template_2cc_std(1, 96)
+}
+
+//todo make separate mail heads
+
+spriteset(spriteset_shinkukan_dd_purchase, "src/trains/shinkukan_dd.png") {
+	template_purchase_dualheaded(1, 128)
+}
+
+
+
+
+//wagons
+
+spriteset(spriteset_wagon_powered_purchase, "src/trains/unitwagons.png") {
+	template_purchase(1, 64)
+}
+
+spriteset(spriteset_wagon_unpowered_purchase, "src/trains/unitwagons.png") {
+	template_purchase(1, 96)
+}
+
+
+spriteset(spriteset_wagon_powered_generic, "src/trains/unitwagons.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_wagon_unpowered_generic, "src/trains/unitwagons.png") {
+	template_2cc_std(1, 32)
+}
+
+
+//Cargo Trains
+
+//1st gen
+spriteset(spriteset_cargo_engine_1_front, "src/trains/cargo_engine_1.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_cargo_engine_1_rear, "src/trains/cargo_engine_1.png") {
+	template_2cc_std(1, 32)
+}
+
+spriteset(spriteset_cargo_engine_1_mid, "src/trains/cargo_engine_1.png") {
+	template_2cc_std(1, 64)
+}
+
+spriteset(spriteset_cargo_engine_1_purchase, "src/trains/cargo_engine_1.png") {
+	template_purchase(1, 128)
+}
+
+//2nd gen
+spriteset(spriteset_cargo_engine_2_front, "src/trains/cargo_engine_2.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_cargo_engine_2_rear, "src/trains/cargo_engine_2.png") {
+	template_2cc_std(1, 32)
+}
+
+spriteset(spriteset_cargo_engine_2_mid, "src/trains/cargo_engine_2.png") {
+	template_2cc_std(1, 64)
+}
+
+spriteset(spriteset_cargo_engine_2_purchase, "src/trains/cargo_engine_2.png") {
+	template_purchase(1, 128)
+}
+
+//3rd gen
+spriteset(spriteset_cargo_engine_3_front, "src/trains/cargo_engine_3.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_cargo_engine_3_rear, "src/trains/cargo_engine_3.png") {
+	template_2cc_std(1, 32)
+}
+
+spriteset(spriteset_cargo_engine_3_mid, "src/trains/cargo_engine_3.png") {
+	template_2cc_std(1, 64)
+}
+
+spriteset(spriteset_cargo_engine_3_purchase, "src/trains/cargo_engine_3.png") {
+	template_purchase(1, 128)
+}
+
+//4th gen
+spriteset(spriteset_cargo_engine_4_front, "src/trains/cargo_engine_4.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_cargo_engine_4_rear, "src/trains/cargo_engine_4.png") {
+	template_2cc_std(1, 32)
+}
+
+spriteset(spriteset_cargo_engine_4_mid, "src/trains/cargo_engine_4.png") {
+	template_2cc_std(1, 64)
+}
+
+spriteset(spriteset_cargo_engine_4_purchase, "src/trains/cargo_engine_4.png") {
+	template_purchase(1, 128)
+}
+
+//Cargo Wagons
+spriteset(spriteset_wagon_cargo_purchase, "src/trains/cargo_empty.png") {
+	template_purchase(1, 32)
+}
+
+spriteset(spriteset_wagon_cargo_empty, "src/trains/cargo_empty.png") {
+	template_2cc_std(1, 1)
+}
+
+//goods containers
+spriteset(spriteset_wagon_container_1, "src/trains/cargo_containers.png") {
+	template_2cc_std(1, 1)
+}
+
+spriteset(spriteset_wagon_container_2, "src/trains/cargo_containers.png") {
+	template_2cc_std(1, 32)
+}
+
+spriteset(spriteset_wagon_container_3, "src/trains/cargo_containers.png") {
+	template_2cc_std(1, 64)
+}
+
+spriteset(spriteset_wagon_container_4, "src/trains/cargo_containers.png") {
+	template_2cc_std(1, 96)
+}
+
+spriteset(spriteset_wagon_mail, "src/trains/cargo_loads.png") {
+	template_2cc_std(1, 128)
+}
+
+spriteset(spriteset_wagon_coal, "src/trains/cargo_loads.png") {
+	template_2cc_std(1, 224)
+}
+
+
+//Attachment Rules
+
+switch(FEAT_TRAINS, PARENT, switch_can_attach_nothing, [STORE_TEMP(position_in_consist_from_end, 0x10F), var[0x61, 0, 0x0000FFFF, 0xC6]]) {
+	142: string(STR_ERROR_SINGLE_ONLY);
+	146: string(STR_ERROR_SINGLE_ONLY);
+	150..179: string(STR_ERROR_SINGLE_ONLY);
+	180..190: string(STR_ERROR_SINGLE_ONLY);
+	192..194: string(STR_ERROR_SINGLE_ONLY);
+	196..198: string(STR_ERROR_SINGLE_ONLY);
+}
+
+switch(FEAT_TRAINS, PARENT, switch_can_attach_self, [STORE_TEMP(position_in_consist_from_end, 0x10F), var[0x61, 0, 0x0000FFFF, 0xC6]]) {
+	142: string(STR_ERROR_SELF_ONLY);
+	146: CB_RESULT_ATTACH_ALLOW_IF_RAILTYPES;
+	150..179: string(STR_ERROR_SELF_ONLY);
+	180..190: string(STR_ERROR_SELF_ONLY);
+	192..194: string(STR_ERROR_SELF_ONLY);
+	196..198: string(STR_ERROR_SELF_ONLY);
+}
+
+switch(FEAT_TRAINS, PARENT, switch_can_attach_unit_pax, [STORE_TEMP(position_in_consist_from_end, 0x10F), var[0x61, 0, 0x0000FFFF, 0xC6]]) {
+	142: string(STR_ERROR_NO_WAGONS);
+	146: string(STR_ERROR_NO_WAGONS);
+	150..179: CB_RESULT_ATTACH_ALLOW_IF_RAILTYPES;
+	180..190: string(STR_ERROR_CARGO_ONLY);
+	192..194: CB_RESULT_ATTACH_ALLOW_IF_RAILTYPES;
+	196..198: string(STR_ERROR_CARGO_ONLY);
+}
+
+switch(FEAT_TRAINS, PARENT, switch_can_attach_unit_cargo, [STORE_TEMP(position_in_consist_from_end, 0x10F), var[0x61, 0, 0x0000FFFF, 0xC6]]) {
+	142: string(STR_ERROR_NO_WAGONS);
+	146: string(STR_ERROR_NO_WAGONS);
+	150..179: string(STR_ERROR_MUWAG_ONLY);
+	180..190: CB_RESULT_ATTACH_ALLOW_IF_RAILTYPES;
+	192..194: string(STR_ERROR_MUWAG_ONLY);
+	196..198: CB_RESULT_ATTACH_ALLOW_IF_RAILTYPES;
+	CB_RESULT_ATTACH_ALLOW_IF_RAILTYPES;
+}
+
+//switch for wagon type
+switch(FEAT_TRAINS, SELF, switch_can_attach_vehicle, vehicle_type_id) {
+	142: switch_can_attach_nothing;
+	146: switch_can_attach_self;
+	150..179: switch_can_attach_unit_pax;
+	180..190: switch_can_attach_unit_cargo;
+	192..194: switch_can_attach_unit_pax;
+	196..198: switch_can_attach_unit_cargo;
+	CB_RESULT_ATTACH_ALLOW_IF_RAILTYPES;
+}
+
+
+
+
+
+//RAILTYPES
+
+
+//depot snow thingy
+switch(FEAT_RAILTYPES, SELF, depot_snow_switch, terrain_type) {
+	TILETYPE_SNOW: spriteset_vactrain_depot_snow;
+	spriteset_vactrain_depot_normal;
+}
+
+//level crossing thingy
+switch(FEAT_RAILTYPES, SELF, switch_fsmaglev_crossing, level_crossing_status) {
+	LEVEL_CROSSING_CLOSED: spriteset_fsmaglev_crossing_closed;
+	spriteset_fsmaglev_crossing_open; //Default return
+}
+
+
+item(FEAT_RAILTYPES) {
+    property {
+        label: "MGLV";
+//        name: string(STR_VAC_NAME);
+//        menu_text: string(STR_VAC_RAIL);
+//        build_window_caption: string(STR_BUILD_CAPTION);
+//        autoreplace_text: string(STR_AUTOREPLACE);
+//        new_engine_text: string(STR_NEW_ENGINE);
+        compatible_railtype_list: ["VACT", "MGLV"];
+		powered_railtype_list:      ["MGLV"];                 
+//        railtype_flags: bitmask(RAILTYPE_FLAG_NO_LEVEL_CROSSING); //add param for level crossings allowed
+//        station_graphics: RAILTYPE_STATION_MONORAIL;
+        construction_cost: 36;
+		maintenance_cost: 36;
+        speed_limit: 750 km/h;
+//        acceleration_model: ACC_MODEL_MAGLEV;
+    }
+    graphics {
+		track_overlay: 		spriteset_fsmaglev_overlay;
+		underlay: 			spriteset_fsmaglev_underlay;
+		tunnels: 			spriteset_fsmaglev_tunnel;
+		bridge_surfaces: 	spriteset_fsmaglev_bridge;
+		level_crossings:	switch_fsmaglev_crossing;
+    }
+}
+
+item(FEAT_RAILTYPES) {
+    property {
+        label: "VACT";
+        name: string(STR_VAC_NAME);
+        menu_text: string(STR_VAC_RAIL);
+        build_window_caption: string(STR_BUILD_CAPTION);
+		toolbar_caption: string(STR_TOOLBAR_CAPTION);
+        autoreplace_text: string(STR_AUTOREPLACE);
+        new_engine_text: string(STR_NEW_ENGINE);
+        compatible_railtype_list: ["VACT", "MGLV"];
+		powered_railtype_list:      ["VACT", "MGLV"];                 
+        railtype_flags: bitmask(RAILTYPE_FLAG_CATENARY, RAILTYPE_FLAG_NO_LEVEL_CROSSING);
+        curve_speed_multiplier: 8;
+        station_graphics: RAILTYPE_STATION_MONORAIL;
+        construction_cost: 4000;
+		maintenance_cost: 200; //real pricey
+        speed_limit: 0 km/h;
+        acceleration_model: ACC_MODEL_MAGLEV;
+    }
+    graphics {
+		track_overlay: 		spriteset_vactrain_overlay;
+		underlay: 			spriteset_vactrain_underlay;
+		tunnels: 			spriteset_vactrain_tunnel;
+		bridge_surfaces: 	spriteset_vactrain_bridge;
+		catenary_wire: 		spriteset_vactrain_tubes;
+		catenary_pylons: 	spriteset_vactrain_pylons; //new pylons
+		gui: 				spriteset_gui_opengfx;
+		depots: 			depot_snow_switch;
+    }
+}
+
+
+
+//TRAINS
+
+//Hyperloops
+
+switch (FEAT_TRAINS, SELF, switch_hyperloop_1_cost, current_railtype) {
+	VACT: return 12;
+	MGLV: return 4;
+	CB_FAILED;
+}
+
+switch (FEAT_TRAINS, SELF, switch_hyperloop_1_speed, current_railtype) {
+	VACT: return 800;
+	MGLV: return 120;
+	CB_FAILED;
+}
+
+item (FEAT_TRAINS, hyperloop_1, 142) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC);
+  track_type: VACT;
+  name: string(STR_NAME_HYPERLOOP_1);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year,1,1);
+  speed: 1000 km/h;
+  air_drag_coefficient: 0;
+  power: 4000 hp;
+  dual_headed: 0;
+  engine_class: ENGINE_CLASS_MAGLEV;
+  cargo_capacity: 25;
+  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_ARMOURED);
+  weight: 12;
+  loading_speed: 40; //med
+  reliability_decay: 55;
+  model_life: 45;
+  vehicle_life: 20;
+  cost_factor: 40;
+ // running_cost_factor: 255;
+  running_cost_base: RUNNING_COST_STEAM;
+  }
+  graphics { // graphics for engine
+  additional_text:	string(STR_TEXT_HYPERLOOP_1);
+  default: spriteset_hyperloop_1;
+  purchase: spriteset_hyperloop_1_purchase;
+  can_attach_wagon: switch_can_attach_vehicle;
+  speed: switch_hyperloop_1_speed;
+  running_cost_factor: switch_hyperloop_1_cost;
+  }
+}
+
+//Chinese Vactrains
+
+//CHINESE PROTOTYPE
+
+switch (FEAT_TRAINS, SELF, switch_chinese_proto_cost, current_railtype) {
+	VACT: return 20;
+	MGLV: return 10;
+	CB_FAILED;
+}
+
+switch (FEAT_TRAINS, SELF, switch_chinese_proto_speed, current_railtype) {
+	VACT: return 1200;
+	MGLV: return 200;
+	CB_FAILED;
+}
+
+item (FEAT_TRAINS, chinese_prototype, 146) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC);
+  track_type: VACT;
+  name: string(STR_NAME_CHINESE_PROTO);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year+6,1,1);
+  speed: 2400 km/h;
+//		tractive_effort_coefficient:    1;
+  air_drag_coefficient: 0;
+  power: 20000 hp;
+  dual_headed: 0;
+  engine_class: ENGINE_CLASS_MAGLEV;
+  cargo_capacity: 48;
+  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_ARMOURED);
+  weight: 39;
+  loading_speed: 20;
+  reliability_decay: 55;
+  model_life: 35;
+  vehicle_life: 20;
+  cost_factor: 82;
+ // running_cost_factor: 255;
+  running_cost_base: RUNNING_COST_STEAM;
+  }
+  graphics { // graphics for engine
+  additional_text:	string(STR_TEXT_CHINESE_PROTO);
+  default: spriteset_chinese_proto;
+  purchase: spriteset_chinese_proto_purchase;
+  can_attach_wagon: switch_can_attach_vehicle;
+  speed: switch_chinese_proto_speed;
+  running_cost_factor: switch_chinese_proto_cost;
+  }
+}
+
+
+//CHINESE INTERCITY
+
+//railtype speed switches
+switch (FEAT_TRAINS, SELF, switch_chinese_intercity_speed, current_railtype) {
+	VACT: return 1200;
+	MGLV: return 200;
+	CB_FAILED;
+}
+
+switch (FEAT_TRAINS, SELF, switch_chinese_intercity_cost, current_railtype) {
+	VACT: return 72;
+	MGLV: return 16;
+	CB_FAILED;
+}
+
+
+//mail car gfx
+switch (FEAT_TRAINS, SELF, switch_chinese_intercity_cargo, cargo_classes) {
+	bitmask(CC_PASSENGERS): spriteset_chinese_intercity_pax;
+	spriteset_chinese_intercity_mail;
+}
+
+switch (FEAT_TRAINS, SELF, switch_chinese_intercity_cargo_head, cargo_classes) {
+	bitmask(CC_PASSENGERS): spriteset_chinese_intercity_pax_head;
+	spriteset_chinese_intercity_mail_head;
+}
+
+
+
+//main item
+item (FEAT_TRAINS, chinese_intercity, 170) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC, TRAIN_FLAG_MU);
+  track_type: VACT;
+  name: string(STR_NAME_CHINESE_INTERCITY);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year+11,1,1);
+  speed: 1200 km/h;
+  air_drag_coefficient: 0;
+  power: 18000 hp;
+  dual_headed: 1;
+  engine_class: ENGINE_CLASS_MAGLEV;
+  cargo_capacity: 72;
+  loading_speed: 80;
+  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  weight: 50;
+  reliability_decay: 12;
+  model_life: 70;
+  vehicle_life: 48; //MAKE NEVER EXPIRE!!!
+  cost_factor: 90;
+  running_cost_factor: 230;
+  running_cost_base: RUNNING_COST_STEAM;
+  }
+  graphics { 
+    additional_text:	string(STR_TEXT_CHINESE_INTERCITY);
+  speed: switch_chinese_intercity_speed;
+  running_cost_factor: switch_chinese_intercity_cost;
+  can_attach_wagon: switch_can_attach_vehicle;
+  purchase: spriteset_chinese_intercity_purchase;
+  switch_chinese_intercity_cargo_head;
+  }
+  
+  livery_override(vactrain_wagon_powered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 80;
+  power: 7000;
+  weight: 50;
+  running_cost_factor: 80;
+  cargo_capacity: 80; //add switch here for different cargos
+  length: 8;
+  default: switch_chinese_intercity_cargo;
+  }
+  livery_override(vactrain_wagon_unpowered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 80;
+  weight: 40;
+  running_cost_factor: 20;
+  cargo_capacity: 80; //add switch here for different cargos
+  length: 8;
+  default: switch_chinese_intercity_cargo;
+  }
+  
+}
+
+//CHINESE INTERNATIONAL
+
+//railtype speed switches
+switch (FEAT_TRAINS, SELF, switch_chinese_international_speed, current_railtype) {
+	VACT: return 4000;
+	MGLV: return 200;
+	CB_FAILED;
+}
+
+switch (FEAT_TRAINS, SELF, switch_chinese_international_cost, current_railtype) {
+	VACT: return 79;
+	MGLV: return 16;
+	CB_FAILED;
+}
+
+
+//mail car gfx
+switch (FEAT_TRAINS, SELF, switch_chinese_international_cargo, cargo_classes) {
+	bitmask(CC_PASSENGERS): spriteset_chinese_international_pax;
+	spriteset_chinese_international_mail;
+}
+
+//mail car gfx
+switch (FEAT_TRAINS, SELF, switch_chinese_international_cargo_head, cargo_classes) {
+	bitmask(CC_PASSENGERS): spriteset_chinese_international_pax_head;
+	spriteset_chinese_international_mail_head;
+}
+
+//main item
+item (FEAT_TRAINS, chinese_international, 172) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC, TRAIN_FLAG_MU);
+  track_type: VACT;
+  name: string(STR_NAME_CHINESE_INTERNATIONAL);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year+34,1,1);
+  speed: 4000 km/h;
+  air_drag_coefficient: 0;
+  power: 27000 hp;
+  dual_headed: 1;
+  engine_class: ENGINE_CLASS_MAGLEV;
+  cargo_capacity: 70;
+  loading_speed: 80; //fast
+  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  weight: 52;
+  reliability_decay: 12;
+  model_life: VEHICLE_NEVER_EXPIRES;
+  vehicle_life: 48;
+  cost_factor: 119;
+  running_cost_factor: 230;
+  running_cost_base: RUNNING_COST_STEAM;
+  }
+  graphics { 
+  additional_text:	string(STR_TEXT_CHINESE_INTERNATIONAL);
+  speed: switch_chinese_international_speed;
+  running_cost_factor: switch_chinese_international_cost;
+  can_attach_wagon: switch_can_attach_vehicle;
+  purchase: spriteset_chinese_international_purchase;
+  switch_chinese_international_cargo_head;
+  }
+  
+  livery_override(vactrain_wagon_powered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 80;
+  power: 7000;
+  weight: 52;
+  running_cost_factor: 80;
+  cargo_capacity: 75; //add switch here for different cargos
+  length: 8;
+  default: switch_chinese_international_cargo;
+  }
+  livery_override(vactrain_wagon_unpowered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 80;
+  weight: 45;
+  running_cost_factor: 20;
+  cargo_capacity: 75; //add switch here for different cargos
+  length: 8;
+  default: switch_chinese_international_cargo;
+  }
+  
+}
+
+
+//CHINESE INTERCONTINENTAL
+
+//railtype speed switches
+switch (FEAT_TRAINS, SELF, switch_chinese_intercont_speed, current_railtype) {
+	VACT: return 4000;
+	MGLV: return 200;
+	CB_FAILED;
+}
+
+switch (FEAT_TRAINS, SELF, switch_chinese_intercont_cost, current_railtype) {
+	VACT: return 95;
+	MGLV: return 20;
+	CB_FAILED;
+}
+
+
+//mail car gfx
+switch (FEAT_TRAINS, SELF, switch_chinese_intercont_cargo, cargo_classes) {
+	bitmask(CC_PASSENGERS): spriteset_chinese_intercont_pax;
+	spriteset_chinese_intercont_mail;
+}
+
+//mail car gfx
+switch (FEAT_TRAINS, SELF, switch_chinese_intercont_cargo_head, cargo_classes) {
+	bitmask(CC_PASSENGERS): spriteset_chinese_intercont_pax_head;
+	spriteset_chinese_intercont_mail_head;
+}
+
+//main item
+item (FEAT_TRAINS, chinese_intercont, 174) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC, TRAIN_FLAG_MU);
+  track_type: VACT;
+  name: string(STR_NAME_CHINESE_INTERCONTINENTAL);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year+50,1,1);
+  speed: 4000 km/h;
+  air_drag_coefficient: 0;
+  power: 39000 hp;
+  dual_headed: 1;
+  engine_class: ENGINE_CLASS_MAGLEV;
+  cargo_capacity: 100;
+  loading_speed: 40;
+  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  weight: 68;
+  reliability_decay: 12;
+  model_life: VEHICLE_NEVER_EXPIRES;
+  vehicle_life: 48;
+  cost_factor: 200;
+  running_cost_factor: 240;
+  running_cost_base: RUNNING_COST_STEAM;
+  }
+  graphics { 
+  additional_text:	string(STR_TEXT_CHINESE_INTERCONT);
+  speed: switch_chinese_intercont_speed;
+  running_cost_factor: switch_chinese_intercont_cost;
+  can_attach_wagon: switch_can_attach_vehicle;
+  purchase: spriteset_chinese_intercont_purchase;
+  switch_chinese_intercont_cargo_head;
+  }
+  
+  livery_override(vactrain_wagon_powered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 40;
+  power: 19000;
+  weight: 66;
+  running_cost_factor: 90;
+  cargo_capacity: 105; //add switch here for different cargos
+  length: 8;
+  default: switch_chinese_intercont_cargo;
+  }
+  livery_override(vactrain_wagon_unpowered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 40;
+  weight: 56;
+  running_cost_factor: 20;
+  cargo_capacity: 110; //add switch here for different cargos
+  length: 8;
+  default: switch_chinese_intercont_cargo;
+  }
+  
+}
+
+
+//European Vactrains
+
+//SWISSMETRO
+
+
+//railtype switches
+switch (FEAT_TRAINS, SELF, switch_swissmetro_1_speed, current_railtype) {
+	VACT: return 900;
+	MGLV: return 420;
+	CB_FAILED;
+}
+
+switch (FEAT_TRAINS, SELF, switch_swissmetro_1_cost, current_railtype) {
+	VACT: return 55;
+	MGLV: return 35;
+	CB_FAILED;
+}
+
+
+//mail car gfx
+switch (FEAT_TRAINS, SELF, switch_swissmetro_1_cargo, cargo_classes) {
+	bitmask(CC_PASSENGERS): spriteset_swissmetro_pax;
+	spriteset_swissmetro_mail;
+}
+
+//Dualheaded engines
+switch(FEAT_TRAINS, SELF, switch_swissmetro_1_reversed, var[0xC8]) {
+	0xFE: spriteset_swissmetro_rear;
+    0xFF: spriteset_swissmetro_rear; 
+    spriteset_swissmetro_front;
+}
+
+//main item
+item (FEAT_TRAINS, swissmetro_gen1, 152) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC, TRAIN_FLAG_MU);
+  track_type: VACT;
+  name: string(STR_NAME_SWISSMETRO_1);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year,1,1);
+  speed: 4100 km/h;
+  air_drag_coefficient: 0;
+  power: 14000 hp;
+  dual_headed: 1;
+  engine_class: ENGINE_CLASS_MAGLEV;
+  cargo_capacity: 48;
+  loading_speed: 40;
+  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  weight: 32;
+  reliability_decay: 12;
+  model_life: 45;
+  vehicle_life: 48;
+  cost_factor: 88;
+  running_cost_factor: 144;
+  running_cost_base: RUNNING_COST_STEAM;
+  }
+  graphics { 
+  additional_text:	string(STR_TEXT_SWISSMETRO_1);
+  speed: switch_swissmetro_1_speed;
+  running_cost_factor: switch_swissmetro_1_cost;
+  can_attach_wagon: switch_can_attach_vehicle;
+  purchase: spriteset_swissmetro_purchase;
+  switch_swissmetro_1_reversed;
+  }
+  
+  livery_override(vactrain_wagon_powered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 40;
+  power: 4000;
+  weight: 38;
+  running_cost_factor: 80;
+  cargo_capacity: 56; //add switch here for different cargos
+  length: 8;
+  default: switch_swissmetro_1_cargo;
+  }
+  livery_override(vactrain_wagon_unpowered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 40;
+  weight: 38;
+  running_cost_factor: 20;
+  cargo_capacity: 56; //add switch here for different cargos
+  length: 8;
+  default: switch_swissmetro_1_cargo;
+  }
+  
+}
+
+
+//CHIMAERA
+
+
+//railtype switches
+switch (FEAT_TRAINS, SELF, switch_chimaera_speed, current_railtype) {
+	VACT: return 4000;
+	MGLV: return 640;
+	CB_FAILED;
+}
+
+switch (FEAT_TRAINS, SELF, switch_chimaera_cost, current_railtype) {
+	VACT: return 75;
+	MGLV: return 45;
+	CB_FAILED;
+}
+
+
+//mail car gfx
+switch (FEAT_TRAINS, SELF, switch_chimaera_cargo, cargo_classes) {
+	bitmask(CC_PASSENGERS): spriteset_chimaera_pax;
+	spriteset_chimaera_mail;
+}
+
+//Dualheaded engines
+switch(FEAT_TRAINS, SELF, switch_chimaera_reversed, var[0xC8]) {
+	0xFE: spriteset_chimaera_rear;
+    0xFF: spriteset_chimaera_rear; 
+    spriteset_chimaera_front;
+}
+
+//main item
+item (FEAT_TRAINS, chimaera, 158) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC, TRAIN_FLAG_MU);
+  track_type: VACT;
+  name: string(STR_NAME_CHIMAERA);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year+23,1,1);
+  air_drag_coefficient: 0;
+  power: 22000 hp;
+  dual_headed: 1;
+  length: 6;
+  engine_class: ENGINE_CLASS_MAGLEV;
+  cargo_capacity: 10;
+  loading_speed: 20;
+  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  weight: 52;
+  reliability_decay: 12;
+  model_life: VEHICLE_NEVER_EXPIRES;
+  vehicle_life: 48;
+  cost_factor: 150;
+  running_cost_factor: 230;
+  running_cost_base: RUNNING_COST_STEAM;
+  }
+  graphics { 
+  additional_text:	string(STR_TEXT_CHIMAERA);
+  speed: switch_chimaera_speed;
+  running_cost_factor: switch_chimaera_cost;
+  can_attach_wagon: switch_can_attach_vehicle;
+  purchase: spriteset_chimaera_purchase;
+  switch_chimaera_reversed;
+  }
+  
+  livery_override(vactrain_wagon_powered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 20;
+  power: 12000;
+  weight: 28;
+  running_cost_factor: 80;
+  cargo_capacity: 40; //add switch here for different cargos
+  length: 4;
+  default: switch_chimaera_cargo;
+  }
+  livery_override(vactrain_wagon_unpowered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 20;
+  weight: 24;
+  running_cost_factor: 20;
+  cargo_capacity: 40; //add switch here for different cargos
+  length: 4;
+  default: switch_chimaera_cargo;
+  }
+  
+}
+
+
+//French Trains
+
+//TRAIN SOUS VIDE 1
+
+//railtype switches
+switch (FEAT_TRAINS, SELF, switch_tsv_1_speed, current_railtype) {
+	VACT: return 2000;
+	MGLV: return 450;
+	CB_FAILED;
+}
+
+switch (FEAT_TRAINS, SELF, switch_tsv_1_cost, current_railtype) {
+	VACT: return 70;
+	MGLV: return 35;
+	CB_FAILED;
+}
+
+
+
+//mail car gfx
+switch (FEAT_TRAINS, SELF, switch_tsv_1_cargo, cargo_classes) {
+	bitmask(CC_PASSENGERS): spriteset_tsv_1_pax;
+	spriteset_tsv_1_mail;
+}
+
+//Dualheaded engines
+switch(FEAT_TRAINS, SELF, switch_tsv_1_reversed, var[0xC8]) {
+	0xFE: spriteset_tsv_1_rear;
+    0xFF: spriteset_tsv_1_rear; 
+    spriteset_tsv_1_front;
+}
+
+//main item
+item (FEAT_TRAINS, tsv_1, 154) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC, TRAIN_FLAG_MU);
+  track_type: VACT;
+  name: string(STR_NAME_FRENCH_1);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year+15,1,1);
+  speed: 2000 km/h;
+  air_drag_coefficient: 0;
+  power: 9000 hp;
+  dual_headed: 1;
+  engine_class: ENGINE_CLASS_MAGLEV;
+  cargo_capacity: 10;
+  loading_speed: 80;
+  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  weight: 18;
+  length: 3;
+  reliability_decay: 12;
+  model_life: VEHICLE_NEVER_EXPIRES;
+  vehicle_life: 48;
+  cost_factor: 107;
+  running_cost_factor: 230;
+  running_cost_base: RUNNING_COST_STEAM;
+  }
+  graphics { 
+  additional_text:	string(STR_TEXT_FRENCH_1);
+  speed: switch_tsv_1_speed;
+  running_cost_factor: switch_tsv_1_cost;
+  can_attach_wagon: switch_can_attach_vehicle;
+  purchase: spriteset_tsv_1_purchase;
+  switch_tsv_1_reversed;
+  }
+  
+  livery_override(vactrain_wagon_powered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 80;
+  power: 9000;
+  weight: 10;
+  running_cost_factor: 80;
+  cargo_capacity: 10; //add switch here for different cargos
+  length: 2;
+  default: spriteset_tsv_1_node;
+  }
+  livery_override(vactrain_wagon_unpowered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 80;
+  weight: 28;
+  running_cost_factor: 20;
+  cargo_capacity: 62; //add switch here for different cargos
+  length: 7;
+  default: switch_tsv_1_cargo;
+  }
+  
+}
+
+//TSV DUPLEX
+
+
+//railtype switches
+switch (FEAT_TRAINS, SELF, switch_tsv_duplex_speed, current_railtype) {
+	VACT: return 2000;
+	MGLV: return 640;
+	CB_FAILED;
+}
+
+switch (FEAT_TRAINS, SELF, switch_tsv_duplex_cost, current_railtype) {
+	VACT: return 82;
+	MGLV: return 40;
+	CB_FAILED;
+}
+
+
+//mail car gfx
+switch (FEAT_TRAINS, SELF, switch_tsv_duplex_cargo, cargo_classes) {
+	bitmask(CC_PASSENGERS): spriteset_tsv_duplex_pax;
+	spriteset_tsv_duplex_mail;
+}
+//mail head gfx
+switch (FEAT_TRAINS, SELF, switch_tsv_duplex_cargo_head, cargo_classes) {
+	bitmask(CC_PASSENGERS): spriteset_tsv_duplex_pax_head;
+	spriteset_tsv_duplex_mail_head;
+}
+
+
+//main item
+item (FEAT_TRAINS, tsv_duplex, 156) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC, TRAIN_FLAG_MU);
+  track_type: VACT;
+  name: string(STR_NAME_FRENCH_2);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year+30,1,1);
+  speed: 2000 km/h;
+  air_drag_coefficient: 0;
+  power: 32000 hp;
+  dual_headed: 1;
+  engine_class: ENGINE_CLASS_MAGLEV;
+  cargo_capacity: 90;
+  loading_speed: 80;
+  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  weight: 63;
+  reliability_decay: 12;
+  model_life: VEHICLE_NEVER_EXPIRES;
+  vehicle_life: 52;
+  cost_factor: 133;
+  running_cost_factor: 240;
+  running_cost_base: RUNNING_COST_STEAM;
+  }
+  graphics { 
+  additional_text:	string(STR_TEXT_FRENCH_2);
+  speed: switch_tsv_duplex_speed;
+  running_cost_factor: switch_tsv_duplex_cost;
+  can_attach_wagon: switch_can_attach_vehicle;
+  purchase: spriteset_tsv_duplex_purchase;
+  switch_tsv_duplex_cargo_head;
+  }
+  
+  livery_override(vactrain_wagon_powered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 80;
+  power: 16000;
+  weight: 62;
+  running_cost_factor: 80;
+  cargo_capacity: 120; //add switch here for different cargos
+  length: 8;
+  default: switch_tsv_duplex_cargo;
+  }
+  livery_override(vactrain_wagon_unpowered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 80;
+  weight: 58;
+  running_cost_factor: 20;
+  cargo_capacity: 120; //add switch here for different cargos
+  length: 8;
+  default: switch_tsv_duplex_cargo;
+  }
+  
+}
+
+
+//Japanese Vactrains
+
+//SHINKUKAN 1
+
+//railtype switches
+switch (FEAT_TRAINS, SELF, switch_shinkukan_1_speed, current_railtype) {
+	VACT: return 4000;
+	MGLV: return 500;
+	CB_FAILED;
+}
+
+switch (FEAT_TRAINS, SELF, switch_shinkukan_1_cost, current_railtype) {
+	VACT: return 105;
+	MGLV: return 40;
+	CB_FAILED;
+}
+
+
+//mail car gfx
+switch (FEAT_TRAINS, SELF, switch_shinkukan_1_cargo, cargo_classes) {
+	bitmask(CC_PASSENGERS): spriteset_shinkukan_1_pax;
+	spriteset_shinkukan_1_mail;
+}
+
+//Dualheaded engines
+switch(FEAT_TRAINS, SELF, switch_shinkukan_1_reversed, var[0xC8]) {
+	0xFE: spriteset_shinkukan_1_rear;
+    0xFF: spriteset_shinkukan_1_rear; 
+    spriteset_shinkukan_1_front;
+}
+
+//main item
+item (FEAT_TRAINS, shinkukan_1, 162) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC, TRAIN_FLAG_MU);
+  track_type: VACT;
+  name: string(STR_NAME_JAPANESE_1);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year+39,1,1);
+  speed: 4000 km/h;
+  air_drag_coefficient: 0;
+  power: 35000 hp;
+  dual_headed: 1;
+  engine_class: ENGINE_CLASS_MAGLEV;
+  cargo_capacity: 80;
+  loading_speed: 40;
+  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  weight: 46;
+  reliability_decay: 12;
+  model_life: VEHICLE_NEVER_EXPIRES;
+  vehicle_life: 52;
+  cost_factor: 187;
+  running_cost_factor: 240;
+  running_cost_base: RUNNING_COST_STEAM;
+  }
+  graphics { 
+  additional_text:	string(STR_TEXT_JAPANESE_1);
+  speed: switch_shinkukan_1_speed;
+  running_cost_factor: switch_shinkukan_1_cost;
+  can_attach_wagon: switch_can_attach_vehicle;
+  purchase: spriteset_shinkukan_1_purchase;
+  switch_shinkukan_1_reversed;
+  }
+  
+  livery_override(vactrain_wagon_powered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 40;
+  power: 15000;
+  weight: 48;
+  running_cost_factor: 80;
+  cargo_capacity: 95; //add switch here for different cargos
+  length: 8;
+  default: switch_shinkukan_1_cargo;
+  }
+  livery_override(vactrain_wagon_unpowered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 40;
+  weight: 48;
+  running_cost_factor: 20;
+  cargo_capacity: 95; //add switch here for different cargos
+  length: 8;
+  default: switch_shinkukan_1_cargo;
+  }
+  
+}
+
+
+//SHINKUKAN DD
+
+//railtype switches
+switch (FEAT_TRAINS, SELF, switch_shinkukan_dd_speed, current_railtype) {
+	VACT: return 6000;
+	MGLV: return 500;
+	CB_FAILED;
+}
+
+switch (FEAT_TRAINS, SELF, switch_shinkukan_dd_cost, current_railtype) {
+	VACT: return 145;
+	MGLV: return 50;
+	CB_FAILED;
+}
+
+
+//mail car gfx
+switch (FEAT_TRAINS, SELF, switch_shinkukan_dd_cargo, cargo_classes) {
+	bitmask(CC_PASSENGERS): spriteset_shinkukan_dd_pax;
+	spriteset_shinkukan_dd_mail;
+}
+
+//mail head gfx - test
+switch (FEAT_TRAINS, SELF, switch_shinkukan_dd_cargo_head, cargo_classes) {
+	bitmask(CC_PASSENGERS): spriteset_shinkukan_dd_pax_head;
+	spriteset_shinkukan_dd_mail_head;
+}
+
+//Dualheaded engines
+/*
+switch(FEAT_TRAINS, SELF, switch_shinkukan_dd_reversed, var[0xC8]) {
+	0xFE: spriteset_shinkukan_dd_rear;
+    0xFF: spriteset_shinkukan_dd_rear; 
+    spriteset_shinkukan_dd_front;
+}
+*/
+
+//main item
+item (FEAT_TRAINS, shinkukan_dd, 166) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC, TRAIN_FLAG_MU);
+  track_type: VACT;
+  name: string(STR_NAME_JAPANESE_2);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year+67,1,1);
+  speed: 4000 km/h;
+  air_drag_coefficient: 0;
+  power: 42000 hp;
+  dual_headed: 1;
+  engine_class: ENGINE_CLASS_MAGLEV;
+  cargo_capacity: 160;
+  loading_speed: 20;
+  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  weight: 70;
+  reliability_decay: 12;
+  model_life: VEHICLE_NEVER_EXPIRES;
+  vehicle_life: 52;
+  cost_factor: 249;
+  running_cost_factor: 250;
+  running_cost_base: RUNNING_COST_STEAM;
+  }
+  graphics { 
+  additional_text:	string(STR_TEXT_JAPANESE_2);
+  speed: switch_shinkukan_dd_speed;
+  running_cost_factor: switch_shinkukan_dd_cost;
+  can_attach_wagon: switch_can_attach_vehicle;
+  purchase: spriteset_shinkukan_dd_purchase;
+  switch_shinkukan_dd_cargo_head;
+  }
+  
+  livery_override(vactrain_wagon_powered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 20;
+  power: 26000;
+  weight: 70;
+  running_cost_factor: 90;
+  cargo_capacity: 185; //add switch here for different cargos
+  length: 8;
+  default: switch_shinkukan_dd_cargo;
+  }
+  livery_override(vactrain_wagon_unpowered) { // graphics for alternative look of passenger wagon when used with this engine
+  loading_speed: 20;
+  weight: 60;
+  running_cost_factor: 20;
+  cargo_capacity: 190; //add switch here for different cargos
+  length: 8;
+  default: switch_shinkukan_dd_cargo;
+  }
+  
+}
+
+
+
+
+//Unit Wagons
+
+item (FEAT_TRAINS, vactrain_wagon_powered, 192) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC);
+  track_type: VACT;
+  name: string(STR_NAME_POWERED_WAGON);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year+8,1,1);
+  power: 0;
+  cargo_capacity: 1;
+  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  weight: 1;
+  cost_factor: 85;
+  loading_speed: 20;
+  }
+  graphics {
+	purchase: spriteset_wagon_powered_purchase;
+	spriteset_wagon_powered_generic; 
+  }
+}
+
+
+item (FEAT_TRAINS, vactrain_wagon_unpowered, 194) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC);
+  track_type: VACT;
+  name: string(STR_NAME_UNPOWERED_WAGON);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year+8,1,1);
+  power: 0;
+  cargo_capacity: 1;
+  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  weight: 1;
+  loading_speed: 20;
+  cost_factor: 45;
+  }
+  graphics {
+	purchase: spriteset_wagon_unpowered_purchase;
+	spriteset_wagon_unpowered_generic;
+  }
+}
+
+
+
+//Cargo Vactrains - TODO Put parameter here to disable cargo vactrains
+
+//Cargo vactrain 1st gen.
+
+switch (FEAT_TRAINS, SELF, switch_cargo_engine_1_speed, current_railtype) {
+	VACT: return 800;
+	MGLV: return 300;
+	CB_FAILED;
+}
+
+switch (FEAT_TRAINS, SELF, switch_cargo_engine_1_cost, current_railtype) {
+	VACT: return 30;
+	MGLV: return 15;
+	CB_FAILED;
+}
+
+
+switch (FEAT_TRAINS, SELF, switch_cargo_engine_1_position_rear, position_in_consist_from_end) {
+	0: spriteset_cargo_engine_1_rear;
+	spriteset_cargo_engine_1_mid;
+}
+
+switch (FEAT_TRAINS, SELF, switch_cargo_engine_1_position_front, position_in_consist) {
+	0: spriteset_cargo_engine_1_front;
+	switch_cargo_engine_1_position_rear;
+}
+
+
+
+//main items
+item (FEAT_TRAINS, cargo_engine_1, 182) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC);
+  track_type: VACT;
+  name: string(STR_NAME_CARGO_1);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year+13,1,1);
+  air_drag_coefficient: 0;
+  power: 14000 hp;
+  dual_headed: 0;
+  length: 8;
+  engine_class: ENGINE_CLASS_MAGLEV;
+  cargo_capacity: 0;
+  weight: 52;
+  reliability_decay: 12;
+  model_life: 70;
+  vehicle_life: 48;
+  cost_factor: 70;
+  running_cost_factor: 230;
+  running_cost_base: RUNNING_COST_STEAM;
+  }
+  graphics { 
+  additional_text:	string(STR_TEXT_CARGO_1);
+  speed: switch_cargo_engine_1_speed;
+  running_cost_factor: switch_cargo_engine_1_cost;
+  can_attach_wagon: switch_can_attach_vehicle;
+  purchase: spriteset_cargo_engine_1_purchase;
+  default: switch_cargo_engine_1_position_front; //todo fancy switches
+  } 
+}
+  
+  
+  
+//2nd gen
+
+switch (FEAT_TRAINS, SELF, switch_cargo_engine_2_speed, current_railtype) {
+	VACT: return 1200;
+	MGLV: return 450;
+	CB_FAILED;
+}
+
+switch (FEAT_TRAINS, SELF, switch_cargo_engine_2_cost, current_railtype) {
+	VACT: return 40;
+	MGLV: return 25;
+	CB_FAILED;
+}
+
+
+switch (FEAT_TRAINS, SELF, switch_cargo_engine_2_position_rear, position_in_consist_from_end) {
+	0: spriteset_cargo_engine_2_rear;
+	spriteset_cargo_engine_2_mid;
+}
+
+switch (FEAT_TRAINS, SELF, switch_cargo_engine_2_position_front, position_in_consist) {
+	0: spriteset_cargo_engine_2_front;
+	switch_cargo_engine_2_position_rear;
+}
+
+
+
+//main items
+item (FEAT_TRAINS, cargo_engine_2, 184) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC);
+  track_type: VACT;
+  name: string(STR_NAME_CARGO_2);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year+33,1,1);
+  air_drag_coefficient: 0;
+  power: 28000 hp;
+  dual_headed: 0;
+  length: 8;
+  engine_class: ENGINE_CLASS_MAGLEV;
+  cargo_capacity: 0;
+  weight: 52;
+  reliability_decay: 12;
+  model_life: VEHICLE_NEVER_EXPIRES;
+  vehicle_life: 48;
+  cost_factor: 140;
+  running_cost_factor: 230;
+  running_cost_base: RUNNING_COST_STEAM;
+  }
+  graphics { 
+  additional_text:	string(STR_TEXT_CARGO_2);
+  speed: switch_cargo_engine_2_speed;
+  running_cost_factor: switch_cargo_engine_2_cost;
+  can_attach_wagon: switch_can_attach_vehicle;
+  purchase: spriteset_cargo_engine_2_purchase;
+  default: switch_cargo_engine_2_position_front; 
+  } 
+}
+
+
+//3rd gen
+
+switch (FEAT_TRAINS, SELF, switch_cargo_engine_3_speed, current_railtype) {
+	VACT: return 2000;
+	MGLV: return 640;
+	CB_FAILED;
+}
+
+switch (FEAT_TRAINS, SELF, switch_cargo_engine_3_cost, current_railtype) {
+	VACT: return 50;
+	MGLV: return 35;
+	CB_FAILED;
+}
+
+
+switch (FEAT_TRAINS, SELF, switch_cargo_engine_3_position_rear, position_in_consist_from_end) {
+	0: spriteset_cargo_engine_3_rear;
+	spriteset_cargo_engine_3_mid;
+}
+
+switch (FEAT_TRAINS, SELF, switch_cargo_engine_3_position_front, position_in_consist) {
+	0: spriteset_cargo_engine_3_front;
+	switch_cargo_engine_3_position_rear;
+}
+
+
+
+//main items
+item (FEAT_TRAINS, cargo_engine_3, 186) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC);
+  track_type: VACT;
+  name: string(STR_NAME_CARGO_3);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year+53,1,1);
+  air_drag_coefficient: 0;
+  power: 48000 hp;
+  dual_headed: 0;
+  length: 8;
+  engine_class: ENGINE_CLASS_MAGLEV;
+  cargo_capacity: 0;
+  weight: 52;
+  reliability_decay: 12;
+  model_life: VEHICLE_NEVER_EXPIRES;
+  vehicle_life: 48;
+  cost_factor: 182;
+  running_cost_factor: 230;
+  running_cost_base: RUNNING_COST_STEAM;
+  }
+  graphics { 
+  additional_text:	string(STR_TEXT_CARGO_3);
+  speed: switch_cargo_engine_3_speed;
+  running_cost_factor: switch_cargo_engine_3_cost;
+  can_attach_wagon: switch_can_attach_vehicle;
+  purchase: spriteset_cargo_engine_3_purchase;
+  default: switch_cargo_engine_3_position_front; 
+  } 
+}
+
+
+//4th gen
+
+switch (FEAT_TRAINS, SELF, switch_cargo_engine_4_speed, current_railtype) {
+	VACT: return 4000;
+	MGLV: return 750;
+	CB_FAILED;
+}
+
+switch (FEAT_TRAINS, SELF, switch_cargo_engine_4_cost, current_railtype) {
+	VACT: return 60;
+	MGLV: return 45;
+	CB_FAILED;
+}
+
+
+switch (FEAT_TRAINS, SELF, switch_cargo_engine_4_position_rear, position_in_consist_from_end) {
+	0: spriteset_cargo_engine_4_rear;
+	spriteset_cargo_engine_4_mid;
+}
+
+switch (FEAT_TRAINS, SELF, switch_cargo_engine_4_position_front, position_in_consist) {
+	0: spriteset_cargo_engine_4_front;
+	switch_cargo_engine_4_position_rear;
+}
+
+
+
+//main items
+item (FEAT_TRAINS, cargo_engine_4, 188) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC);
+  track_type: VACT;
+  name: string(STR_NAME_CARGO_4);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year+73,1,1);
+  air_drag_coefficient: 0;
+  power: 54000 hp;
+  dual_headed: 0;
+  length: 8;
+  engine_class: ENGINE_CLASS_MAGLEV;
+  cargo_capacity: 0;
+  weight: 52;
+  reliability_decay: 12;
+  model_life: VEHICLE_NEVER_EXPIRES;
+  vehicle_life: 48;
+  cost_factor: 229;
+  running_cost_factor: 230;
+  running_cost_base: RUNNING_COST_STEAM;
+  }
+  graphics { 
+  additional_text:	string(STR_TEXT_CARGO_4);
+  speed: switch_cargo_engine_4_speed;
+  running_cost_factor: switch_cargo_engine_4_cost;
+  can_attach_wagon: switch_can_attach_vehicle;
+  purchase: spriteset_cargo_engine_4_purchase;
+  default: switch_cargo_engine_4_position_front; //todo fancy switches
+  } 
+}
+ 
+ 
+//Cargo Wagon Switches
+
+spritegroup group_wagon_container_1 {
+	loaded: [spriteset_wagon_container_1];
+	loading: [spriteset_wagon_cargo_empty];
+}
+
+spritegroup group_wagon_container_2 {
+	loaded: [spriteset_wagon_container_2];
+	loading: [spriteset_wagon_cargo_empty];
+}
+
+spritegroup group_wagon_container_3 {
+	loaded: [spriteset_wagon_container_3];
+	loading: [spriteset_wagon_cargo_empty];
+}
+
+spritegroup group_wagon_container_4 {
+	loaded: [spriteset_wagon_container_4];
+	loading: [spriteset_wagon_cargo_empty];
+}
+
+random_switch (FEAT_TRAINS, SELF, random_wagon_cargo_container) {
+ 2: group_wagon_container_1;
+ 2: group_wagon_container_2;
+ 2: group_wagon_container_3;
+ 2: group_wagon_container_4;
+}
+
+
+random_switch (FEAT_TRAINS, SELF, random_wagon_cargo_empty) {
+ 1: random_wagon_cargo_container;
+ 1: spriteset_wagon_cargo_empty;
+}
+
+random_switch (FEAT_TRAINS, SELF, random_wagon_cargo_halffull) {
+ 3: random_wagon_cargo_container;
+ 1: spriteset_wagon_cargo_empty;
+}
+
+
+
+ 
+//cargo wagon mega cargo switch TODO cargo graphics and stuff
+/*
+switch(FEAT_TRAINS, SELF, switch_wagon_cargo_selection, cargo_type_in_veh) {
+	LVST: switch_wagon_Gen5_Boxcar_Type1_Livestock_livery;
+	COAL: group_wagon_coal;
+	MAIL: group_wagon_mail;
+	GOOD: random_wagon_cargo_container;
+	random_wagon_cargo_empty;
+}
+*/
+
+//fullness switch
+switch(FEAT_TRAINS, SELF, switch_wagon_cargo_fullness, cargo_count) {
+	0: random_wagon_cargo_empty;
+	1..15: random_wagon_cargo_halffull;
+	random_wagon_cargo_container;
+}
+
+
+//Cargo wagon
+item (FEAT_TRAINS, vactrain_wagon_cargo, 196) {
+ property {
+  sprite_id: SPRITE_ID_NEW_TRAIN;
+  misc_flags: bitmask(TRAIN_FLAG_2CC, TRAIN_FLAG_AUTOREFIT);
+  track_type: VACT;
+  name: string(STR_NAME_CARGO_WAGON);
+  climates_available: ALL_CLIMATES;
+  introduction_date: date(param_starting_year+8,1,1);
+  power: 0;
+  cargo_capacity: 30;
+  refittable_cargo_classes: ALL_NORMAL_CARGO_CLASSES;
+  non_refittable_cargo_classes: bitmask(CC_PASSENGERS);
+  weight: 1;
+  loading_speed: 30;
+  cost_factor: 25;
+  length: 6;
+  }
+  graphics {
+	purchase: spriteset_wagon_cargo_purchase;
+	default: switch_wagon_cargo_fullness;
+	cargo_capacity: 30;
+  }
+}
