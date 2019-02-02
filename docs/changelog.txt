@@ -1,4 +1,7 @@
-Changelog My Fancy NewGRF
+Changelog
 
-0.1.0:
-- Feature: Something fancy
+1.1.2:
+ - Added parameter to change when vactrains become available
+ 
+1.1.3:
+ - Added parameter to change when vactrain wagons become available

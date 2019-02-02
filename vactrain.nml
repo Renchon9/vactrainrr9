@@ -28,6 +28,17 @@ grf {
    def_value: 2020;
    }
   }
+
+ param {
+  param_wagon_year {
+   type: int;
+   name: string(STR_PARAM_WAGON_YEAR);
+   desc: string(STR_PARAM_WAGON_YEAR_DESC);
+   min_value: 1800;
+   max_value: 3000;
+   def_value: 2028;
+   }
+  }
  
  //cost parameters
  //courtesy of Terkhen
@@ -1919,7 +1930,7 @@ item (FEAT_TRAINS, vactrain_wagon_powered, 192) {
   track_type: VACT;
   name: string(STR_NAME_POWERED_WAGON);
   climates_available: ALL_CLIMATES;
-  introduction_date: date(param_starting_year+8,1,1);
+  introduction_date: date(param_wagon_year,1,1);
   power: 0;
   cargo_capacity: 1;
   refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
@@ -1941,7 +1952,7 @@ item (FEAT_TRAINS, vactrain_wagon_unpowered, 194) {
   track_type: VACT;
   name: string(STR_NAME_UNPOWERED_WAGON);
   climates_available: ALL_CLIMATES;
-  introduction_date: date(param_starting_year+8,1,1);
+  introduction_date: date(param_wagon_year,1,1);
   power: 0;
   cargo_capacity: 1;
   refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
@@ -2274,7 +2285,7 @@ item (FEAT_TRAINS, vactrain_wagon_cargo, 196) {
   track_type: VACT;
   name: string(STR_NAME_CARGO_WAGON);
   climates_available: ALL_CLIMATES;
-  introduction_date: date(param_starting_year+8,1,1);
+  introduction_date: date(param_wagon_year,1,1);
   power: 0;
   cargo_capacity: 30;
   refittable_cargo_classes: ALL_NORMAL_CARGO_CLASSES;
