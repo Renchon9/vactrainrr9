@@ -4,6 +4,7 @@ This is a NewGRF which adds a Vacuum Tube Railtype, and some trains to go with i
 Code by Emperor Jake, using parts from code by Terkhen, planetmaker, Transportman, FooBar and possibly others
 
 Forked by WORD559
+Forked by Renchon - more CC for Vactrain Unit Wagon i.e. to the same classes as in Vactrain Universal Cargo Module
 
 (c) 2018 Emperor Jake. Licensed under GPLv2+
 */
@@ -1933,7 +1934,7 @@ item (FEAT_TRAINS, vactrain_wagon_powered, 192) {
   introduction_date: date(param_wagon_year,1,1);
   power: 0;
   cargo_capacity: 1;
-  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  refittable_cargo_classes: ALL_NORMAL_CARGO_CLASSES;
   weight: 1;
   cost_factor: 85;
   loading_speed: 20;
@@ -1955,7 +1956,7 @@ item (FEAT_TRAINS, vactrain_wagon_unpowered, 194) {
   introduction_date: date(param_wagon_year,1,1);
   power: 0;
   cargo_capacity: 1;
-  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  refittable_cargo_classes: ALL_NORMAL_CARGO_CLASSES;
   weight: 1;
   loading_speed: 20;
   cost_factor: 45;
