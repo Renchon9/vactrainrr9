@@ -4,7 +4,7 @@ This is a NewGRF which adds a Vacuum Tube Railtype, and some trains to go with i
 Code by Emperor Jake, using parts from code by Terkhen, planetmaker, Transportman, FooBar and possibly others
 
 Forked by WORD559
-Forked by Renchon - more CC for Vactrain Unit Wagon i.e. to the same classes as in Vactrain Universal Cargo Module
+Forked by Renchon - All MU accept all cargoes (by usage ALL_NORMAL_CARGO_CLASSES) - Shameless cheating
 
 (c) 2018 Emperor Jake. Licensed under GPLv2+
 */
@@ -1078,7 +1078,7 @@ item (FEAT_TRAINS, hyperloop_1, 142) {
   dual_headed: 0;
   engine_class: ENGINE_CLASS_MAGLEV;
   cargo_capacity: 25;
-  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_ARMOURED);
+  refittable_cargo_classes: ALL_NORMAL_CARGO_CLASSES;
   weight: 12;
   loading_speed: 40; //med
   reliability_decay: 55;
@@ -1129,7 +1129,7 @@ item (FEAT_TRAINS, chinese_prototype, 146) {
   dual_headed: 0;
   engine_class: ENGINE_CLASS_MAGLEV;
   cargo_capacity: 48;
-  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_ARMOURED);
+  refittable_cargo_classes: ALL_NORMAL_CARGO_CLASSES;
   weight: 39;
   loading_speed: 20;
   reliability_decay: 55;
@@ -1195,7 +1195,7 @@ item (FEAT_TRAINS, chinese_intercity, 170) {
   engine_class: ENGINE_CLASS_MAGLEV;
   cargo_capacity: 72;
   loading_speed: 80;
-  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  refittable_cargo_classes: ALL_NORMAL_CARGO_CLASSES;
   weight: 50;
   reliability_decay: 12;
   model_life: 70;
@@ -1277,7 +1277,7 @@ item (FEAT_TRAINS, chinese_international, 172) {
   engine_class: ENGINE_CLASS_MAGLEV;
   cargo_capacity: 70;
   loading_speed: 80; //fast
-  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  refittable_cargo_classes: ALL_NORMAL_CARGO_CLASSES;
   weight: 52;
   reliability_decay: 12;
   model_life: VEHICLE_NEVER_EXPIRES;
@@ -1360,7 +1360,7 @@ item (FEAT_TRAINS, chinese_intercont, 174) {
   engine_class: ENGINE_CLASS_MAGLEV;
   cargo_capacity: 100;
   loading_speed: 40;
-  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  refittable_cargo_classes: ALL_NORMAL_CARGO_CLASSES;
   weight: 68;
   reliability_decay: 12;
   model_life: VEHICLE_NEVER_EXPIRES;
@@ -1447,7 +1447,7 @@ item (FEAT_TRAINS, swissmetro_gen1, 152) {
   engine_class: ENGINE_CLASS_MAGLEV;
   cargo_capacity: 48;
   loading_speed: 40;
-  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  refittable_cargo_classes: ALL_NORMAL_CARGO_CLASSES;
   weight: 32;
   reliability_decay: 12;
   model_life: 45;
@@ -1532,7 +1532,7 @@ item (FEAT_TRAINS, chimaera, 158) {
   engine_class: ENGINE_CLASS_MAGLEV;
   cargo_capacity: 10;
   loading_speed: 20;
-  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  refittable_cargo_classes: ALL_NORMAL_CARGO_CLASSES;
   weight: 52;
   reliability_decay: 12;
   model_life: VEHICLE_NEVER_EXPIRES;
@@ -1619,7 +1619,7 @@ item (FEAT_TRAINS, tsv_1, 154) {
   engine_class: ENGINE_CLASS_MAGLEV;
   cargo_capacity: 10;
   loading_speed: 80;
-  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  refittable_cargo_classes: ALL_NORMAL_CARGO_CLASSES;
   weight: 18;
   length: 3;
   reliability_decay: 12;
@@ -1703,7 +1703,7 @@ item (FEAT_TRAINS, tsv_duplex, 156) {
   engine_class: ENGINE_CLASS_MAGLEV;
   cargo_capacity: 90;
   loading_speed: 80;
-  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  refittable_cargo_classes: ALL_NORMAL_CARGO_CLASSES;
   weight: 63;
   reliability_decay: 12;
   model_life: VEHICLE_NEVER_EXPIRES;
@@ -1789,7 +1789,7 @@ item (FEAT_TRAINS, shinkukan_1, 162) {
   engine_class: ENGINE_CLASS_MAGLEV;
   cargo_capacity: 80;
   loading_speed: 40;
-  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  refittable_cargo_classes: ALL_NORMAL_CARGO_CLASSES;
   weight: 46;
   reliability_decay: 12;
   model_life: VEHICLE_NEVER_EXPIRES;
@@ -1881,7 +1881,7 @@ item (FEAT_TRAINS, shinkukan_dd, 166) {
   engine_class: ENGINE_CLASS_MAGLEV;
   cargo_capacity: 160;
   loading_speed: 20;
-  refittable_cargo_classes: bitmask(CC_PASSENGERS, CC_MAIL, CC_EXPRESS, CC_ARMOURED);
+  refittable_cargo_classes: ALL_NORMAL_CARGO_CLASSES;
   weight: 70;
   reliability_decay: 12;
   model_life: VEHICLE_NEVER_EXPIRES;
